@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BA1726FF19C921B10076288E /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = BA1726FE19C921B10076288E /* main.c */; };
-		BA17270119C921B10076288E /* DispatcherSimulator.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = BA17270019C921B10076288E /* DispatcherSimulator.1 */; };
+		BA17270D19C928A00076288E /* Scheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = BA1726FE19C921B10076288E /* Scheduler.c */; };
+		BA86151F19CE46FB009B4EBB /* Process.c in Sources */ = {isa = PBXBuildFile; fileRef = BAA12A0619C95ED5007C46FD /* Process.c */; };
+		BAA05AC519CF411E004A3C49 /* FileIO.c in Sources */ = {isa = PBXBuildFile; fileRef = BAA05AC419CF411E004A3C49 /* FileIO.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -18,7 +19,6 @@
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
-				BA17270119C921B10076288E /* DispatcherSimulator.1 in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
@@ -26,8 +26,11 @@
 
 /* Begin PBXFileReference section */
 		BA1726FB19C921B10076288E /* DispatcherSimulator */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DispatcherSimulator; sourceTree = BUILT_PRODUCTS_DIR; };
-		BA1726FE19C921B10076288E /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
-		BA17270019C921B10076288E /* DispatcherSimulator.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = DispatcherSimulator.1; sourceTree = "<group>"; };
+		BA1726FE19C921B10076288E /* Scheduler.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Scheduler.c; sourceTree = "<group>"; };
+		BA9914D619CDF572001CF461 /* Process.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Process.h; sourceTree = "<group>"; };
+		BAA05AC419CF411E004A3C49 /* FileIO.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FileIO.c; sourceTree = "<group>"; };
+		BAA05AC619CF4131004A3C49 /* FileIO.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileIO.h; sourceTree = "<group>"; };
+		BAA12A0619C95ED5007C46FD /* Process.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Process.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,8 +63,11 @@
 		BA1726FD19C921B10076288E /* DispatcherSimulator */ = {
 			isa = PBXGroup;
 			children = (
-				BA1726FE19C921B10076288E /* main.c */,
-				BA17270019C921B10076288E /* DispatcherSimulator.1 */,
+				BAA05AC619CF4131004A3C49 /* FileIO.h */,
+				BAA05AC419CF411E004A3C49 /* FileIO.c */,
+				BA9914D619CDF572001CF461 /* Process.h */,
+				BAA12A0619C95ED5007C46FD /* Process.c */,
+				BA1726FE19C921B10076288E /* Scheduler.c */,
 			);
 			path = DispatcherSimulator;
 			sourceTree = "<group>";
@@ -117,7 +123,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BA1726FF19C921B10076288E /* main.c in Sources */,
+				BAA05AC519CF411E004A3C49 /* FileIO.c in Sources */,
+				BA86151F19CE46FB009B4EBB /* Process.c in Sources */,
+				BA17270D19C928A00076288E /* Scheduler.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -227,6 +235,7 @@
 				BA17270619C921B10076288E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
