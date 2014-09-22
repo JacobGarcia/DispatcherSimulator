@@ -44,3 +44,6 @@ void FirstComeFS();
 float waitTime();
 void NonPreemptive();
 void NonPreemptivePriority();
+void Preemptive();
+void PreemptivePriority();
+void RoundRobin(int quantum);

@@ -115,10 +115,12 @@ int main (int argc, const char * argv[]) {
         /*
          * Apply all the scheduling algorithms and print the results
          */
-        
-        FirstComeFS();
+
+        /*FirstComeFS();
         NonPreemptive();
         NonPreemptivePriority();
-        
+        Preemptive();
+        PreemptivePriority();*/
+        RoundRobin(quantum);
     }
 }
