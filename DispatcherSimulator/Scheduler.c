@@ -1,18 +1,19 @@
 /*************************************************************************/
 /*                                                                       */
-/* Copyright (c) 2012 Abelardo Lopez Lagunas                             */
+/* Copyright (c) 2014 Abelardo Lopez Lagunas, Mario J. García Navarro    */
 /*                                                                       */
-/* File name: Scheduler.h                                                */
+/* File name: Scheduler.c                                                */
 /*                                                                       */
 /* Author:                                                               */
 /*          Abelardo Lopez Lagunas                                       */
 /*                                                                       */
 /* Edited by:                                                            */
+/*                                                                       */
 /*          Mario García Navarro                                         */
 /*                                                                       */
 /* Purpose:                                                              */
 /*          This program implements the basic process scheduling         */
-/*          algorithms for the TC2008 class.                             */
+/*          algorithms for the TC2008 class                              */
 /*                                                                       */
 /* Usage:   The program reads a text file with the processes. The first  */
 /*          integer in the file is the quantum, followed by four integer */
@@ -39,6 +40,8 @@
 /*                                                                       */
 /*          May 24 11:56 2012 - Code refactoring & big fixes             */
 /*                                                                       */
+/*          Sep 20 12:24 2014 - Added scheduling algorithms              */
+/*                                                                       */
 /* Error handling:                                                       */
 /*          On any unrecoverable error, the program exits                */
 /*                                                                       */
@@ -48,7 +51,7 @@
 /*************************************************************************/
 
 #include <stdio.h>                       /* Used for the function printf */
-#include <stdlib.h>                        /* Used for malloc definition */
+#include <stdlib.h>              /* Used for the EXIT_FAILURE definition */
 #include "FileIO.h"       /* Definition of file access support functions */
 #include "Process.h"           /* Definition of processes creation and
                             computing operations that find the average time 
@@ -68,33 +71,36 @@
 int main (int argc, const char * argv[]) {
 
     FILE   *fp;                                  /* Pointer to the file */
-    int    quantum = 0;                /* Quantum value for round robin */
+    int    quantum = 0;                /* Quantum value for Round Robin */
     int    parameters[NUMVAL];        /* Process parameters in the line */
     int    i;                    /* Number of parameters in the process */
     
     /* Check if the parameters in the main function are not empty */
     if (argc < NUMPARAMS){
-        printf("Need a file with the process information\n");
+        printf("Need a file with the process information\n\n");
         printf("Abnormal termination\n");
         return (EXIT_FAILURE);
     }
     else {
+        
         /* Open the file and check that it exists */
         fp = fopen (argv[1],"r");       /* Open file for read operation */
         if (!fp)                            /* The file does not exists */
-            ErrorMsg("main","Filename does not exist or is corrupted");
+            ErrorMsg("'main'","Filename does not exist or is corrupted\n");
+        
         else {
+            
             /* The first number in the file is the quantum */
             quantum = GetInt(fp);
         
             if (quantum == EXIT_FAILURE)
-                ErrorMsg("main","The quantum was not found");
+                ErrorMsg("'main'","The quantum was not found");
+            
             else {
-                /*
-                 * Read the process information until the end of file
-                 * is reached.
-                 */
+                /* Read the process information until the end of file 
+                is reached */
                 while (!feof(fp)){
+                    
                     /* For every four parameters create a new process */
                     for (i = 0; ((i < NUMVAL) && (!feof(fp))); i++) {
                         parameters[i] = GetInt(fp);
@@ -102,25 +108,26 @@ int main (int argc, const char * argv[]) {
                     
                     /* Do we have only four parameters? */
                     if (i == NUMVAL) {
+                        
                         /* Create a new process with its information */
                         CreateProcessList(parameters[0],parameters[1], parameters[2], parameters[3]);
                     }
                 }
+                
+                /* Start by sorting the processes by arrival time */
+                SortProcessList(ARRIVALTIME);
+                
+                /* Apply all the scheduling algorithms and print the results */
+                
+                 FirstComeFS();
+                 NonPreemptive();
+                 NonPreemptivePriority();
+                 Preemptive();
+                 PreemptivePriority();
+                 RoundRobin(quantum);
+                
             }
         }
         
-         /* Start by sorting the processes by arrival time */
-        SortProcessList(ARRIVALTIME);
-        
-        /*
-         * Apply all the scheduling algorithms and print the results
-         */
-
-        /*FirstComeFS();
-        NonPreemptive();
-        NonPreemptivePriority();
-        Preemptive();
-        PreemptivePriority();*/
-        RoundRobin(quantum);
     }
 }

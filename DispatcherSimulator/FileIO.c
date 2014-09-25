@@ -1,8 +1,8 @@
 /*************************************************************************/
 /*                                                                       */
-/* Copyright (c) 2011 Abelardo Lopez Lagunas                             */
+/* Copyright (c) 2014 Abelardo Lopez Lagunas, Mario J. García Navarro    */
 /*                                                                       */
-/* File name: FileIO.h                                                   */
+/* File name: FileIO.c                                                   */
 /*                                                                       */
 /* Author:                                                               */
 /*          Abelardo Lopez Lagunas                                       */
@@ -22,9 +22,11 @@
 /*          wrong                                                        */
 /*                                                                       */
 /* Revision history:                                                     */
-/*          Feb  4 15:15 2011 -- File created                            */
+/*          Feb  4 15:15 2011 - File created                             */
 /*                                                                       */
-/*          May 22 09:13 2012 -- Added recognition of negative numbers   */
+/*          May 22 09:13 2012 - Added recognition of negative numbers    */
+/*                                                                       */
+/*          Sep 22 00:55 2014 - Edited messages                          */
 /*                                                                       */
 /* Error handling:                                                       */
 /*          None                                                         */
@@ -105,9 +107,9 @@ int GetInt (FILE *fp){
 
 void ErrorMsg (char * function, char *message){
     
-    printf ("\nError in function %s\n", function);
+    printf ("Error in function: %s\n", function);
     printf ("\t %s\n", message);
-    printf ("The program will terminate.\n\n");
+    printf ("The program will terminate\n\n");
     
 }
 

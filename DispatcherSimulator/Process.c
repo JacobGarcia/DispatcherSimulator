@@ -12,12 +12,24 @@
 /*          different algorithms                                         */
 /*                                                                       */
 /* References:                                                           */
-/*          Abelardo López Lagunas code shown during class lab           */
+/*          Abelardo López Lagunas code shown during lab class           */
 /*                                                                       */
 /* Restrictions:                                                         */
+/*          The code is implemented using static structures, due to this */
+/*          this fact, the number of processes is limited to 10. If by   */
+/*          any means this rule is not considered, the code simply will  */
+/*          not work as expected                                         */
 /*                                                                       */
 /* Revision history:                                                     */
-/*          Sep  17 01:21 2014 -- File created                           */
+/*          Sep  17 01:21 2014 - File created                            */
+/*                                                                       */
+/*          Sep  20 17:52 2014 - Added FCFS and Non Preemptive           */
+/*                               algorithms implementations              */
+/*                                                                       */
+/*          Sep  21 19:34 2014 - Added Preemptive and Round Robin        */
+/*                                 algorithms implementations            */
+/*                                                                       */
+/*          Sep  22 01:12 2014 - Code Refactoring                        */
 /*                                                                       */
 /* Error handling:                                                       */
 /*          None                                                         */
@@ -30,12 +42,13 @@
 /*                                                                       */
 /*************************************************************************/
 
-#include <stdio.h>
+#include <stdio.h>                        /* Used for the function printf */
 #include "Process.h"                                   /* Function header */
 
 #define NUMBERPROCESSES 10          /* The number of max processes that the
                                                     structure can handle */
-int numberOfProcess = 0;
+int numberOfProcess = 0;                /* The number of processes that are
+                                                     defined in the file */
 
 struct process{
     int pID;                                           /* The process ID */
@@ -47,29 +60,76 @@ struct process{
     int lastExecuted;                          /* Time of last execution */
 };
 
-struct process processList[NUMBERPROCESSES];
+struct process processList[NUMBERPROCESSES];    /* The main process list */
 
-struct process contextProcessList[NUMBERPROCESSES * 2];
+struct process contextProcessList[NUMBERPROCESSES * 2]; /* This is defined 
+                                                         because is 
+                                                         required another 
+                                                         process list
+                                                         that contains
+                                                         the information
+                                                         about the context
+                                                         changes. Is
+                                                         used on the 
+                                                         preemptive 
+                                                         algorithms */
 
-struct process processListCopy[NUMBERPROCESSES];
+struct process processListCopy[NUMBERPROCESSES];     /* This is defined in
+                                                     order to keep a clean
+                                                          copy of the main
+                                                           process list */
 
-
+/*************************************************************************/
+/*                                                                       */
+/*  Function: CreateProcessList                                          */
+/*                                                                       */
+/*  Purpose: The function will be in charge to create the main list      */
+/*           of processes                                                */
+/*                                                                       */
+/*  Parameters:                                                          */
+/*            Input :   The process ID, arrival time, CPU burst and      */
+/*                      priority                                         */
+/*                                                                       */
+/*            Output:   The main process list                            */
+/*                                                                       */
+/*************************************************************************/
 void CreateProcessList(int pID, int arrivalTime, int cpuBurst, int priority){
+    /* All the paramaters obtained from the file are 
+    assigned to the new process */
     processList[numberOfProcess].pID = pID;
     processList[numberOfProcess].arrivalTime = arrivalTime;
     processList[numberOfProcess].cpuBurst = cpuBurst;
     processList[numberOfProcess].priority = priority;
-    numberOfProcess++;
+    numberOfProcess++; /* This variable is incremented in order to know how 
+                        many processes we will be working with */
 }
 
+/*************************************************************************/
+/*                                                                       */
+/*  Function: SortProcessList                                            */
+/*                                                                       */
+/*  Purpose: This function sorts the process list considering different  */
+/*           conditions for the sort. All the processes are sorted       */
+/*           using the 'Bubble Sort' algorithm                           */
+/*                                                                       */
+/*  Parameters:                                                          */
+/*            Input :   The sort condition                               */
+/*                                                                       */
+/*            Output:   The main process list ordered by the condition   */
+/*                      that have been determined earlier                */
+/*                                                                       */
+/*************************************************************************/
 void SortProcessList(int sortBy){
     switch (sortBy) {
-            
+        
+        /* This case considers only the arrival time for the sort */
         case ARRIVALTIME:
             for (int i = 0; i < numberOfProcess; i++){
                 for (int j = i + 1; j < numberOfProcess; j++){
                     if (processList[i].arrivalTime > processList[j].arrivalTime){
-                        struct process temporal = processList[i];
+                        /* Exchange the processes if the arrival time is less */
+                        struct process temporal = processList[i]; /* Create a temporal structure that stores a process
+                                                                   in order to not lose it during the exchange */
                         processList[i] =  processList[j];
                          processList[j] = temporal;
                     }
@@ -77,23 +137,35 @@ void SortProcessList(int sortBy){
             }
             break;
             
-        case ARRIVALBURSTTIME:
+        /* This condition is used on the SJF algorithms. Basically is
+        used if there exists processes that arrive at the same time but
+        differs on CPU burst. This orders the process list considering
+        the lowest CPU burst */
+        case CPUBURST:
             for (int i = 0; i < numberOfProcess; i++){
                 for (int j = i + 1; j < numberOfProcess; j++){
+                    /* Exchange the processes if the arrival time is the same and the CPU burst is less */
                     if (processList[i].arrivalTime == processList[j].arrivalTime && processList[i].cpuBurst > processList[j].cpuBurst){
-                        struct process temporal = processList[i];
+                        struct process temporal = processList[i]; /* Create a temporal structure that stores a process
+                                                                  in order to not lose it during the exchange */
                         processList[i] =  processList[j];
                         processList[j] = temporal;
                     }
                 }
             }
             break;
-            
-        case ARRIVALPRIORITYTIME:
+        
+        /* This condition is used on the Priority algorithms. Basically 
+        is used if there exists processes that arrive at the same time but
+        differs on priority. This orders the process list considering
+        the highest priority */
+        case PRIORITY:
             for (int i = 0; i < numberOfProcess; i++){
                 for (int j = i + 1; j < numberOfProcess; j++){
+                    /* Exchange the processes if the arrival time is the same and the priority is higher */
                     if (processList[i].arrivalTime == processList[j].arrivalTime && processList[i].priority > processList[j].priority){
-                        struct process temporal = processList[i];
+                        struct process temporal = processList[i]; /* Create a temporal structure that stores a process
+                                                                  in order to not lose it during the exchange */
                         processList[i] =  processList[j];
                         processList[j] = temporal;
                     }
@@ -106,60 +178,24 @@ void SortProcessList(int sortBy){
     }
 }
 
-float waitTime(){
-    float averageWaitTime = 0;
-    for (int i = 0; i < numberOfProcess; i++)
-        averageWaitTime = averageWaitTime + processList[i].waitTime;
-    
-        #ifdef DEBUG
-            printf("%f  ",averageWaitTime);
-        #endif
-        
-    return averageWaitTime = averageWaitTime / numberOfProcess;
-}
-
-float waitTimePreemptive(int numberOfProcesses){
-    float averageWaitTime = 0;
-    for (int i = 0; i < numberOfProcesses; i++)
-        averageWaitTime = averageWaitTime + contextProcessList[i].waitTime;
-    
-#ifdef DEBUG
-    printf("%f  ",averageWaitTime);
-#endif
-    
-    return averageWaitTime = averageWaitTime / numberOfProcess;
-}
-
-void contextChanges(){
-    for (int i = 0; i < numberOfProcess; i++) {
-        printf("\nt  =  %d\n", processList[i].firstExecuted);
-        printf("Process: %d", processList[i].pID);
-    }
-}
-
-void contextChangesPreemptive(int numberOfProcesses){
-    for (int i = 0; i < numberOfProcesses; i++) {
-        printf("\nt  =  %d\n", contextProcessList[i].firstExecuted);
-        printf("Process: %d", contextProcessList[i].pID);
-    }
-}
-
-void FirstComeFS(){
-    processList[0].waitTime = 0;
-    processList[0].firstExecuted = processList[0].arrivalTime;
-    
-    for (int i = 1; i < numberOfProcess; i++) {
-        processList[i].firstExecuted = processList[i-1].cpuBurst + processList[i-1].firstExecuted;
-        processList[i].waitTime = processList[i].firstExecuted - processList[i].arrivalTime;
-    }
-    
-   
-    float averageWaitTime = waitTime();
-    
-    printf("First Come First Served \nAverage Wait Time : %.2f", averageWaitTime);
-    contextChanges();
-}
-
+/*************************************************************************/
+/*                                                                       */
+/*  Function: Sort                                                       */
+/*                                                                       */
+/*  Purpose: This function sorts the process list considering different  */
+/*           conditions for the sort. All the processes are sorted       */
+/*           using the 'Bubble Sort' algorithm. Actually, this function
+             does the same as SortListProcess, but it is needed since
+             in this function the start and the end condition are 
+             variable, recieved by the function. */
+/*                                                                       */
+/*  Parameters:                                                          */
+/*            Input :   The sort condition                               */
+/*                                                                       */
+/*            Output:   The main process list ordered by the condition   */
+/*                      that have been determined earlier                */
+/*                                                                       */
+/*************************************************************************/
 void Sort(int start, int numberOfProcess){
     for (int i = start; i < numberOfProcess; i++){
         for (int j = i + 1; j < numberOfProcess; j++){
@@ -178,6 +214,107 @@ void Sort(int start, int numberOfProcess){
         }
     }
 }
+
+/*************************************************************************/
+/*                                                                       */
+/*  Function: WaitTime                                                   */
+/*                                                                       */
+/*  Purpose: Obtains the average wait time of all the processes. It is   */
+/*           called after a scheduler algorithm, so none sort or         */
+/*           treatment to the data is needed                             */
+/*                                                                       */
+/*  Parameters:                                                          */
+/*            Input :   The process list and the number of processes     */
+/*                      that it contains                                 */
+/*                                                                       */
+/*            Output:   The average wait time of all the processes       */
+/*                                                                       */
+/*************************************************************************/
+float WaitTime(int numberOfProcesses, struct process processList[]){
+    float averageWaitTime = 0; /* The variable that will store the average 
+                                waiting time */
+    for (int i = 0; i < numberOfProcesses; i++){
+        /* All of the waiting times of each process is obtained and
+         stored in one only variable */
+        averageWaitTime = averageWaitTime + processList[i].waitTime;
+    }
+    
+    /* The sum is divided by the number of processes in order to obtain 
+    the average waiting time */
+    return averageWaitTime = averageWaitTime / numberOfProcess;
+}
+
+/*************************************************************************/
+/*                                                                       */
+/*  Function: ContextChanges                                             */
+/*                                                                       */
+/*  Purpose: Prints the timeline of the context changes. It describes    */
+/*           which process is running at a particular time               */
+/*                                                                       */
+/*  Parameters:                                                          */
+/*            Input :   The process list and the number of processes     */
+/*                      that it contains                                 */
+/*                                                                       */
+/*            Output:   The context changes timeline                     */
+/*                                                                       */
+/*************************************************************************/
+void ContextChanges(int numberOfProcesses, struct process processList[]){
+    for (int i = 0; i < numberOfProcesses; i++) {
+        /* The time that the process is executed */
+        printf("\n|        t    =   %2d        |\n", processList[i].firstExecuted);
+        /* This indicates which process is running at a specific time */
+        printf("|        Process: %2d        |\n", processList[i].pID);
+        printf("-----------------------------");
+
+    }
+}
+
+/*************************************************************************/
+/*                                                                       */
+/*  Function: FirstComeFS                                                */
+/*                                                                       */
+/*  Purpose: Generates the wait time for each of the processes using     */
+/*           the First Come First Served algorithm. Furthermore, the     */
+/*           first execution time of each of the processes is determined */
+/*                                                                       */
+/*  Parameters:                                                          */
+/*            Input :   The process list which in will be computing the  */
+/*                      average wait time                                */
+/*                                                                       */
+/*            Output:   All the process list information considering the */
+/*                      average wait time and the context changes        */
+/*                                                                       */
+/*************************************************************************/
+void FirstComeFS(){
+    
+    float averageWaitTime = 0;
+    
+    printf("-----------------------------\n");
+    printf("|  First Come First Served  |\n");
+    printf("-----------------------------");
+    processList[0].waitTime = 0; /* Since the first process in the list always 
+                                  executes at arrival, it's waiting time is always zero*/
+    
+    processList[0].firstExecuted = processList[0].arrivalTime; /* The first time that the 
+                                                                initial process is executed is 
+                                                                when it arrives*/
+    
+    for (int i = 1; i < numberOfProcess; i++) {
+        
+        /* The first time that a process is executed is when previous processes finishes its execution */
+        processList[i].firstExecuted = processList[i-1].cpuBurst + processList[i-1].firstExecuted;
+        
+        /* The wait time of a process can be found if at its first execution it is substracted the process arrival time*/
+        processList[i].waitTime = processList[i].firstExecuted - processList[i].arrivalTime;
+    }
+    
+   
+    averageWaitTime = WaitTime(numberOfProcess, processList); /* The average waiting time is obtained */
+    ContextChanges(numberOfProcess, processList);   /* The context changes are printed */
+    printf("\n| Average Wait Time:  %.2f  |\n", averageWaitTime); /* The average waiting time is shown */
+    printf("-----------------------------\n");
+}
+
 
 
 void SortPriority(int start, int numberOfProcess){
@@ -200,9 +337,14 @@ void SortPriority(int start, int numberOfProcess){
 }
 
 void NonPreemptive(){
+    
+    printf("-----------------------------\n");
+    printf("|     SJF Non Preemptive    |\n");
+    printf("-----------------------------");
+    
     int lastProcess = 0;
     int burst = 0;
-    SortProcessList(ARRIVALBURSTTIME);
+    SortProcessList(CPUBURST);
     processList[0].waitTime = 0;
     processList[0].firstExecuted = processList[0].arrivalTime;
     
@@ -229,17 +371,22 @@ void NonPreemptive(){
     }
     
     
-    float averageWaitTime = waitTime();
-    
-    printf("SJF Non Preemptive \nAverage Wait Time : %.2f", averageWaitTime);
-    contextChanges();
-
+    float averageWaitTime = WaitTime(numberOfProcess, processList);
+    ContextChanges(numberOfProcess, processList);
+    printf("\n| Average Wait Time:  %.2f  |\n", averageWaitTime); /* The average waiting time is shown */
+    printf("-----------------------------\n");
 }
 
 void NonPreemptivePriority(){
+    
+    printf("-----------------------------\n");
+    printf("|  Priority Non Preemptive  |\n");
+    printf("-----------------------------");
+    
     int lastProcess = 0;
     int burst = 0;
-    SortProcessList(ARRIVALPRIORITYTIME);
+    SortProcessList(ARRIVALTIME);
+    SortProcessList(PRIORITY);
     processList[0].waitTime = 0;
     processList[0].firstExecuted = processList[0].arrivalTime;
     
@@ -266,19 +413,28 @@ void NonPreemptivePriority(){
     }
     
     
-    float averageWaitTime = waitTime();
-    
-    printf("Priority Non Preemptive \nAverage Wait Time : %.2f", averageWaitTime);
-    contextChanges();
+    float averageWaitTime = WaitTime(numberOfProcess, processList);
+    ContextChanges(numberOfProcess, processList);
+    printf("\n| Average Wait Time:  %.2f  |\n", averageWaitTime); /* The average waiting time is shown */
+    printf("-----------------------------\n");
     
 }
 
-void Treatment(){
+int Treatment(){
+    int difference = 0;
     if (processList[0].arrivalTime > 0) {
-        int difference = processList[0].arrivalTime;
+        difference = processList[0].arrivalTime;
         for (int i = 0; i < numberOfProcess; i++) {
             processList[i].arrivalTime = processList[i].arrivalTime - difference;
         }
+    }
+    
+    return difference;
+}
+
+void inverseTreatment(int difference,  int numberOfProcesses){
+    for (int i = 0; i < numberOfProcesses; i++) {
+        contextProcessList[i].firstExecuted = contextProcessList[i].firstExecuted + difference;
     }
 }
 
@@ -295,26 +451,32 @@ void restoreProcessList(){
 }
 
 void Preemptive(){
-    /*int lastProcess = 0;
-    int burst = 0;*/
-    SortProcessList(ARRIVALBURSTTIME);
-    /*processList[0].waitTime = 0;
-    processList[0].firstExecuted = processList[0].arrivalTime;*/
+    
+    printf("-----------------------------\n");
+    printf("|       SJF  Preemptive     |\n");
+    printf("-----------------------------");
+    
+    
+    SortProcessList(ARRIVALTIME);
     
     copyProcessList();
     
-    Treatment();
+    SortProcessList(CPUBURST);
+    
+    int difference = Treatment();
+    
     int burst = 0;
     int processRunning = 0;
     int cont = 0;
-    //int processesCompleted = 0;
     int lastProcess = 0;
     int contextSwitch = 0;
+    int displacer = 0;
     
     while (processRunning < numberOfProcess - 1) {
         lastProcess = 0;
         burst = 0;
         contextSwitch = 0;
+        displacer = 0;
         for (int i = 0; i < processRunning + cont; i++) {
             burst = burst + contextProcessList[i].cpuBurst;
         }
@@ -330,24 +492,25 @@ void Preemptive(){
         }
         for (int j = 1; j < processList[processRunning].cpuBurst + 1; j++) {
             processList[processRunning].lastExecuted = j;
-            if (j >= processList[processRunning + 1 + contextSwitch].arrivalTime) {
-                if (processList[processRunning].cpuBurst - j > processList[processRunning + 1 + contextSwitch].cpuBurst) {
+            if (j >= processList[processRunning + 1 + contextSwitch + displacer].arrivalTime) {
+                if (processList[processRunning].cpuBurst - j > processList[processRunning + 1 + contextSwitch + displacer].cpuBurst) {
                     contextProcessList[processRunning] = processList[processRunning];
                     contextProcessList[processRunning].cpuBurst = contextProcessList[processRunning].lastExecuted;
                     processList[processRunning].cpuBurst = processList[processRunning].cpuBurst - j;
                     struct process temporal = processList[processRunning];
-                    processList[processRunning] =  processList[processRunning + 1];
-                    processList[processRunning + 1] = temporal;
+                    processList[processRunning] =  processList[processRunning + 1 + displacer];
+                    processList[processRunning + 1 + displacer] = temporal;
                     j = 1;
-                    //processRunning++;
+                    displacer = 0;
                     cont++;
                     contextSwitch++;
                 }
+                else
+                   displacer = (displacer + 1) % (numberOfProcess - (processRunning + contextSwitch + 1));
             }
         }
         
         if (processList[processRunning].cpuBurst == processList[processRunning].lastExecuted) {
-           // processesCompleted++;
             contextProcessList[processRunning + cont] = processList[processRunning];
             contextProcessList[processRunning + cont].lastExecuted = 0;
             processRunning++;
@@ -365,11 +528,14 @@ void Preemptive(){
     }
     
     
-    float averageWaitTime = waitTimePreemptive(processRunning + cont + 1);
+    float averageWaitTime = WaitTime(processRunning + cont + 1, contextProcessList);
     
-    printf("SJF Preemptive \nAverage Wait Time : %.2f", averageWaitTime);
-    contextChangesPreemptive(processRunning + cont + 1);
+    if (difference != 0)
+        inverseTreatment(difference, processRunning + cont + 1);
     
+    ContextChanges(processRunning + cont + 1, contextProcessList);
+    printf("\n| Average Wait Time:  %.2f  |\n", averageWaitTime); /* The average waiting time is shown */
+    printf("-----------------------------\n");
     restoreProcessList();
 }
 
@@ -384,24 +550,27 @@ void printProcesses(){
 }
 
 void PreemptivePriority(){
-    /*int lastProcess = 0;
-     int burst = 0;*/
-    SortProcessList(ARRIVALPRIORITYTIME);
-    /*processList[0].waitTime = 0;
-     processList[0].firstExecuted = processList[0].arrivalTime;*/
-    Treatment();
+    
+    printf("-----------------------------\n");
+    printf("|     Priority Preemptive   |\n");
+    printf("-----------------------------");
+    
+    SortProcessList(PRIORITY);
+    
+    int difference = Treatment();
     
     int burst = 0;
     int processRunning = 0;
     int cont = 0;
-    //int processesCompleted = 0;
     int lastProcess = 0;
     int contextSwitch = 0;
+    int displacer = 0;
     
     while (processRunning < numberOfProcess - 1) {
         lastProcess = 0;
         burst = 0;
         contextSwitch = 0;
+        displacer = 0;
         for (int i = 0; i < processRunning + cont; i++) {
             burst = burst + contextProcessList[i].cpuBurst;
         }
@@ -417,24 +586,25 @@ void PreemptivePriority(){
         }
         for (int j = 1; j < processList[processRunning].cpuBurst + 1; j++) {
             processList[processRunning].lastExecuted = j;
-            if (j >= processList[processRunning + 1 + contextSwitch].arrivalTime) {
-                if (processList[processRunning].priority > processList[processRunning + 1 + contextSwitch].priority) {
+            if (j >= processList[processRunning + 1 + displacer + contextSwitch].arrivalTime) {
+                if (processList[processRunning].priority > processList[processRunning + 1 + displacer + contextSwitch].priority) {
                     contextProcessList[processRunning] = processList[processRunning];
                     contextProcessList[processRunning].cpuBurst = contextProcessList[processRunning].lastExecuted;
-                    processList[processRunning].cpuBurst = processList[processRunning].cpuBurst - j;
+                    processList[processRunning].cpuBurst = processList[processRunning].cpuBurst - processList[processRunning].lastExecuted;
                     struct process temporal = processList[processRunning];
-                    processList[processRunning] =  processList[processRunning + 1];
-                    processList[processRunning + 1] = temporal;
-                    j = 1;
-                    //processRunning++;
+                    processList[processRunning] =  processList[processRunning + 1 + displacer];
+                    processList[processRunning + 1 + displacer] = temporal;
+                    displacer = 0;
+                    j = 0;
                     cont++;
                     contextSwitch++;
                 }
+                else
+                    displacer = (displacer + 1) % (numberOfProcess - (processRunning + contextSwitch + 1));
             }
         }
         
         if (processList[processRunning].cpuBurst == processList[processRunning].lastExecuted) {
-            // processesCompleted++;
             contextProcessList[processRunning + cont] = processList[processRunning];
             contextProcessList[processRunning + cont].lastExecuted = 0;
             processRunning++;
@@ -452,26 +622,36 @@ void PreemptivePriority(){
     }
     
     
-    float averageWaitTime = waitTimePreemptive(processRunning + cont + 1);
+    float averageWaitTime = WaitTime(processRunning + cont + 1, contextProcessList);
     
-    printf("Priority Preemptive \nAverage Wait Time : %.2f", averageWaitTime);
-    contextChangesPreemptive(processRunning + cont + 1);
+    if (difference != 0)
+        inverseTreatment(difference, processRunning + cont + 1);
+    
+    ContextChanges(processRunning + cont + 1, contextProcessList);
+    printf("\n| Average Wait Time:  %.2f  |\n", averageWaitTime); /* The average waiting time is shown */
+    printf("-----------------------------\n");
     
     restoreProcessList();
 }
 
 void RoundRobin(int quantum){
     
+    printf("-----------------------------\n");
+    printf("|         Round Robin       |\n");
+    printf("-----------------------------");
+    
     int processesCompleted = 0;
     int difference = 0;
-    int time = 0;
+    int time = processList[0].arrivalTime;
     int cont = 0;
     
     copyProcessList();
     
     while (processesCompleted < numberOfProcess) {
-        printf("\nt  =  %d", time);
-        printf("\nProcess:  %d\n", processList[0].pID);
+        printf("\n|        t    =   %2d        |\n", time);
+        /* This indicates which process is running at a specific time */
+        printf("|        Process: %2d        |\n", processList[0].pID);
+        printf("-----------------------------");
         difference = processList[0].cpuBurst - quantum;
         if (difference > 0) {
             time = time + quantum;
@@ -511,5 +691,6 @@ void RoundRobin(int quantum){
     }
     averageWaitTime = averageWaitTime / numberOfProcess;
     
-     printf("Priority Preemptive \nAverage Wait Time : %.2f", averageWaitTime);
+    printf("\n| Average Wait Time: %.2f  |\n", averageWaitTime); /* The average waiting time is shown */
+    printf("-----------------------------\n");
 }

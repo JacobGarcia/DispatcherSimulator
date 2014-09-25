@@ -35,13 +35,13 @@
 /*                  Declare the function prototypes                     */
 /************************************************************************/
 
-enum processKeys {PID = 0, PRIORITY, CPUBURST, ARRIVALTIME, ARRIVALBURSTTIME, ARRIVALPRIORITYTIME};
+enum processKeys {PID = 0, ARRIVALTIME, CPUBURST, PRIORITY};
 
 void CreateProcessList(int pID, int arrivalTime, int cpuBurst, int priority);
 void printProcesses();
 void SortProcessList(int sortBy);
 void FirstComeFS();
-float waitTime();
+float WaitTime();
 void NonPreemptive();
 void NonPreemptivePriority();
 void Preemptive();
