@@ -110,7 +110,7 @@ int main (int argc, const char * argv[]) {
                     if (i == NUMVAL) {
                         
                         /* Create a new process with its information */
-                        CreateProcessList(parameters[0],parameters[1], parameters[2], parameters[3]);
+                        CreateProcessList(parameters[0], parameters[1], parameters[2], parameters[3]);
                     }
                 }
                 
@@ -118,12 +118,11 @@ int main (int argc, const char * argv[]) {
                 SortProcessList(ARRIVALTIME);
                 
                 /* Apply all the scheduling algorithms and print the results */
-                
                  FirstComeFS();
-                 NonPreemptive();
-                 NonPreemptivePriority();
-                 Preemptive();
-                 PreemptivePriority();
+                 NonPreemptive(CPUBURST);
+                 NonPreemptive(PRIORITY);
+                 Preemptive(CPUBURST);
+                 Preemptive(PRIORITY);
                  RoundRobin(quantum);
                 
             }
