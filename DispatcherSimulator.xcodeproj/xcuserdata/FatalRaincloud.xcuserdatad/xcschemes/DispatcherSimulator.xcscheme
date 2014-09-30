@@ -60,6 +60,10 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "/Users/FatalRaincloud/Downloads/process4.txt"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/FatalRaincloud/Downloads/process5.txt"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

@@ -37,10 +37,11 @@
 /*          None                                                         */
 /*                                                                       */
 /* Notes:                                                                */
-/*          Six different algoritms will be implemented with the purpose */
-/*          of simulate the behaviour of diverse dispatchers. The        */
-/*          average time of the processes will be obtained in order      */
-/*          to conclude which is the best algorithm in these terms       */
+/*          Six different algorithms will be implemented with the        */
+/*          purpose of simulate the behaviour of diverse dispatchers.    */
+/*          The average waiting time of the processes will be obtained   */
+/*          in order to conclude which is the best algorithm in these    */
+/*          terms.                                                       */
 /*                                                                       */
 /*************************************************************************/
 
@@ -661,6 +662,20 @@ void Preemptive(int algorithm){
                         Sort(CPUBURST, processRunning, lastProcess + 1);/* Sort the process considering the algorithm that have been indicated earlier.                  The process that is going to be executed must be included in the sorting. It is indicated which will be the last process considered in the sorting. Since the comparison in the sorting is made through the operator '<' a '+1' is send in the parameter section */
                 }
                 
+                /* This is a condition indicating if a displace must be done in order to not compromise the correct
+                 functionality of the procedure. It is considered that if the next process have already been executed, and it's found after
+                 the process that is consider to be executed next, then ignore it. Also, if the next process has the same time than the process
+                 to be executed, it have been already validated that process has a higher CPU burst time, so it could be ignored in order
+                 to start with the next process. The condition of the "processRunning < numberOfProcess - 2 - displacer" is used in order to
+                 evade overflow conditions in the process list */
+                while (displacerCondition == 1) {
+                    if ((processList[processRunning + 1 + doubleInterrumptions + displacer].lastExecuted != 0 && processRunning < numberOfProcess - 2 - displacer) ||  (processList[processRunning].arrivalTime == processList[processRunning + 1 + doubleInterrumptions + displacer].arrivalTime && processRunning < numberOfProcess - 2 - displacer)){
+                        displacer++;
+                    }
+                    else
+                        displacerCondition = 0;
+                }
+                
                 /* Initiate the reordering and interruptions procedure. This will simulate that the processes are being executed over time
                  so this will be done until all the cpu burst time of a process expires. Since the operator used for the comparison is a '<' a "+1" is
                  included in the comparison */
@@ -785,7 +800,7 @@ void Preemptive(int algorithm){
                 }
                 
                 
-                /* This is a condition indicating if a displace must be donde in order to not compromise the correct
+                /* This is a condition indicating if a displace must be done in order to not compromise the correct
                  functionality of the procedure. It is considered that if the next process have already been executed, and it's found after
                  the process that is consider to be executed next, then ignore it. Also, if the next process has the same time than the process
                  to be executed, it have been already validated that process has a higher CPU burst time, so it could be ignored in order
